@@ -690,23 +690,33 @@ $leaderboard = mysqli_query($conn, "
     <div class="ai-modal-overlay" id="mgmpListModal" onclick="closeMgmpListModal(event)">
         <div class="ai-modal" onclick="event.stopPropagation()">
             <button class="ai-close" onclick="closeMgmpListModal()"><i class="fa-solid fa-xmark"></i></button>
-            <h3 style="margin-bottom: 20px;"><i class="fa-solid fa-network-wired"></i> Daftar MGMP Terhubung</h3>
-            <div style="max-height: 400px; overflow-y: auto; text-align: left; padding-right: 10px;">
-                <ul style="list-style: none; padding: 0; margin: 0;">
+            <h3 style="margin-bottom: 15px;"><i class="fa-solid fa-network-wired"></i> Daftar MGMP Terhubung</h3>
+            
+            <div style="margin-bottom: 15px; position: relative;">
+                <i class="fa-solid fa-search" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                <input type="text" id="searchMgmp" placeholder="Cari nama MGMP atau domain..." onkeyup="filterMgmpList()" style="width: 100%; padding: 12px 15px 12px 40px; border-radius: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: var(--text-main); font-family: inherit; font-size: 14px; outline: none; transition: border-color 0.3s;">
+            </div>
+
+            <div style="max-height: 350px; overflow-y: auto; text-align: left; padding-right: 10px;" id="mgmpListContainer">
+                <ul id="mgmpListUl" style="list-style: none; padding: 0; margin: 0;">
                     <?php if(empty($all_mgmps)): ?>
-                        <li style="padding: 10px; color: var(--text-muted); text-align: center;">Belum ada MGMP yang terhubung.</li>
+                        <li style="padding: 10px; color: var(--text-muted); text-align: center;" class="mgmp-item">Belum ada MGMP yang terhubung.</li>
                     <?php else: foreach($all_mgmps as $m): 
                         $raw_domain = $m['domain'];
                         $link_url = (strpos($raw_domain, 'http') === 0) ? $raw_domain : 'http://' . $raw_domain;
                     ?>
-                    <li style="padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 5px;">
-                        <strong style="color: #60a5fa; font-size: 15px;"><?= htmlspecialchars($m['mgmp_name']) ?></strong>
-                        <small style="color: var(--text-muted);">
+                    <li class="mgmp-item" style="padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 5px; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+                        <strong class="mgmp-name" style="color: #60a5fa; font-size: 15px;"><?= htmlspecialchars($m['mgmp_name']) ?></strong>
+                        <small class="mgmp-domain" style="color: var(--text-muted);">
                             <i class="fa-solid fa-link"></i> <a href="<?= htmlspecialchars($link_url) ?>" target="_blank" style="color: var(--accent-blue); text-decoration: none;"><?= htmlspecialchars($raw_domain) ?></a>
                         </small>
                     </li>
                     <?php endforeach; endif; ?>
                 </ul>
+                <div id="noMatchMsg" style="display: none; padding: 20px; text-align: center; color: var(--text-muted);">
+                    <i class="fa-solid fa-search-minus" style="font-size: 24px; margin-bottom: 10px; opacity: 0.5;"></i><br>
+                    MGMP tidak ditemukan.
+                </div>
             </div>
         </div>
     </div>
@@ -739,6 +749,34 @@ $leaderboard = mysqli_query($conn, "
         }
         function closeAiModal(e) {
             document.getElementById('aiModal').classList.remove('active');
+        }
+
+        function filterMgmpList() {
+            const input = document.getElementById('searchMgmp').value.toLowerCase();
+            const items = document.querySelectorAll('.mgmp-item');
+            let hasMatch = false;
+
+            items.forEach(item => {
+                const name = item.querySelector('.mgmp-name');
+                const domain = item.querySelector('.mgmp-domain');
+                
+                if (name && domain) {
+                    const nameText = name.innerText.toLowerCase();
+                    const domainText = domain.innerText.toLowerCase();
+                    
+                    if (nameText.includes(input) || domainText.includes(input)) {
+                        item.style.display = 'flex';
+                        hasMatch = true;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                }
+            });
+
+            const noMatchMsg = document.getElementById('noMatchMsg');
+            if (noMatchMsg) {
+                noMatchMsg.style.display = hasMatch ? 'none' : 'block';
+            }
         }
     </script>
 </body>
