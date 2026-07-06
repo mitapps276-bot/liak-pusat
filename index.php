@@ -680,7 +680,7 @@ $leaderboard = mysqli_query($conn, "
     </div>
 
     <?php
-    $all_mgmp_query = mysqli_query($conn, "SELECT mgmp_name, domain FROM national_telemetry ORDER BY mgmp_name ASC");
+    $all_mgmp_query = mysqli_query($conn, "SELECT mgmp_name, domain FROM national_telemetry ORDER BY spi_score DESC, mgmp_name ASC");
     $all_mgmps = [];
     while($r = mysqli_fetch_assoc($all_mgmp_query)) {
         $all_mgmps[] = $r;
@@ -701,15 +701,21 @@ $leaderboard = mysqli_query($conn, "
                 <ul id="mgmpListUl" style="list-style: none; padding: 0; margin: 0;">
                     <?php if(empty($all_mgmps)): ?>
                         <li style="padding: 10px; color: var(--text-muted); text-align: center;" class="mgmp-item">Belum ada MGMP yang terhubung.</li>
-                    <?php else: foreach($all_mgmps as $m): 
+                    <?php else: foreach($all_mgmps as $index => $m): 
                         $raw_domain = $m['domain'];
                         $link_url = (strpos($raw_domain, 'http') === 0) ? $raw_domain : 'http://' . $raw_domain;
+                        $rank = $index + 1;
                     ?>
-                    <li class="mgmp-item" style="padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 5px; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
-                        <strong class="mgmp-name" style="color: #60a5fa; font-size: 15px;"><?= htmlspecialchars($m['mgmp_name']) ?></strong>
-                        <small class="mgmp-domain" style="color: var(--text-muted);">
-                            <i class="fa-solid fa-link"></i> <a href="<?= htmlspecialchars($link_url) ?>" target="_blank" style="color: var(--accent-blue); text-decoration: none;"><?= htmlspecialchars($raw_domain) ?></a>
-                        </small>
+                    <li class="mgmp-item" style="padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 15px; transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+                        <div style="background: rgba(96, 165, 250, 0.15); color: #60a5fa; font-size: 14px; font-weight: bold; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: 8px; flex-shrink: 0; border: 1px solid rgba(96, 165, 250, 0.3);">
+                            <?= $rank ?>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 5px;">
+                            <strong class="mgmp-name" style="color: #60a5fa; font-size: 15px; margin-top: -2px;"><?= htmlspecialchars($m['mgmp_name']) ?></strong>
+                            <small class="mgmp-domain" style="color: var(--text-muted);">
+                                <i class="fa-solid fa-link"></i> <a href="<?= htmlspecialchars($link_url) ?>" target="_blank" style="color: var(--accent-blue); text-decoration: none;"><?= htmlspecialchars($raw_domain) ?></a>
+                            </small>
+                        </div>
                     </li>
                     <?php endforeach; endif; ?>
                 </ul>
