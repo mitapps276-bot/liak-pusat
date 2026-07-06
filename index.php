@@ -167,6 +167,11 @@ $leaderboard = mysqli_query($conn, "
             animation: subtlePan 12s ease-in-out infinite;
         }
 
+        @keyframes spinLogo {
+            0% { transform: perspective(1000px) rotateY(0deg); }
+            100% { transform: perspective(1000px) rotateY(360deg); }
+        }
+
         .floating-logo {
             position: fixed;
             top: 20px;
@@ -175,6 +180,7 @@ $leaderboard = mysqli_query($conn, "
             z-index: 1001;
             filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
             pointer-events: none;
+            animation: spinLogo 12s linear infinite;
         }
 
         .container {
