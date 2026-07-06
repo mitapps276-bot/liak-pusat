@@ -589,31 +589,20 @@ $leaderboard = mysqli_query($conn, "
             </div>
         </div>
 
-        <div class="grid-cards">
-            <div class="card" onclick="showMgmpListModal()" style="cursor: pointer;" title="Lihat Daftar MGMP">
-                <div class="card-icon"><i class="fa-solid fa-network-wired"></i></div>
-                <h3>MGMP Bergabung</h3>
-                <div class="value"><?= number_format($aggr['total_nodes'] ?? 0) ?></div>
-            </div>
-            <div class="card">
-                <div class="card-icon"><i class="fa-solid fa-users"></i></div>
-                <h3>Populasi Guru</h3>
-                <div class="value"><?= number_format($aggr['nat_guru'] ?? 0) ?></div>
-            </div>
-            <div class="card">
-                <div class="card-icon"><i class="fa-solid fa-file-export"></i></div>
-                <h3>Total Ekspor</h3>
-                <div class="value"><?= number_format($aggr['nat_ekspor'] ?? 0) ?></div>
-            </div>
-            <div class="card">
-                <div class="card-icon"><i class="fa-solid fa-file-import"></i></div>
-                <h3>Total Impor</h3>
-                <div class="value"><?= number_format($aggr['nat_impor'] ?? 0) ?></div>
-            </div>
-        </div>
-
         <div class="leaderboard-wrapper">
-            <h2 class="section-title" style="margin-bottom: 20px;"><i class="fa-solid fa-trophy" style="color: #fde047;"></i> LEADERBOARD KINERJA MGMP</h2>
+            <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; margin-bottom: 15px;">
+                <div></div>
+                <h2 class="section-title" style="margin-bottom: 0; text-align: center;">LEADERBOARD KINERJA MGMP</h2>
+                <div style="display: flex; justify-content: flex-end;">
+                    <div class="card" style="padding: 15px 25px; display: flex; align-items: center; gap: 15px; border-radius: 15px; width: max-content; cursor: pointer; transition: 0.3s; margin: 0;" onclick="showMgmpListModal()" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" title="Lihat Daftar MGMP">
+                        <div class="card-icon" style="font-size: 32px; color: var(--accent-blue); margin-bottom: 0;"><i class="fa-solid fa-satellite-dish"></i></div>
+                        <div style="text-align: right;">
+                            <h3 style="font-size: 12px; margin-bottom: 5px;">Total MGMP Terhubung</h3>
+                            <div class="value" style="font-size: 28px; color: var(--accent-blue);"><?= number_format($aggr['total_nodes'] ?? 0) ?></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="table-container">
                 <table>
                     <thead>
@@ -655,8 +644,8 @@ $leaderboard = mysqli_query($conn, "
                             <td class="score-highlight"><?= number_format($row['spi_score']) ?> <span style="font-size:12px; color:var(--text-muted); font-weight:400;">Point</span></td>
                             <td><?= number_format($row['ksi_score'], 2) ?></td>
                             <td style="font-size: 13px; line-height: 1.6; text-align: left; min-width: 120px;">
-                                <span style="color:var(--accent-green);"><i class="fa-solid fa-file-export" style="width: 14px;"></i> Ekspor: <?= number_format($row['cs_ekspor']) ?></span><br>
-                                <span style="color:var(--accent-blue);"><i class="fa-solid fa-file-import" style="width: 14px;"></i> Impor: <?= number_format($row['cs_impor']) ?></span><br>
+                                <span style="color:var(--accent-green);"><i class="fa-solid fa-arrow-up-right-from-square" style="width: 14px;"></i> Ekspor: <?= number_format($row['cs_ekspor']) ?></span><br>
+                                <span style="color:var(--accent-blue);"><i class="fa-solid fa-arrow-down-to-bracket" style="width: 14px;"></i> Impor: <?= number_format($row['cs_impor']) ?></span><br>
                                 <span style="color:var(--text-muted);"><i class="fa-solid fa-rotate" style="width: 14px;"></i> Internal: <?= number_format($row['cs_internal']) ?></span>
                             </td>
                             <td><small style="color:var(--text-muted);"><i class="fa-regular fa-clock"></i> <?= htmlspecialchars(date('d M Y, H:i', strtotime($row['last_sync']))) ?></small></td>
