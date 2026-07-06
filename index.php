@@ -696,10 +696,15 @@ $leaderboard = mysqli_query($conn, "
                 <ul style="list-style: none; padding: 0; margin: 0;">
                     <?php if(empty($all_mgmps)): ?>
                         <li style="padding: 10px; color: var(--text-muted); text-align: center;">Belum ada MGMP yang terhubung.</li>
-                    <?php else: foreach($all_mgmps as $m): ?>
+                    <?php else: foreach($all_mgmps as $m): 
+                        $raw_domain = $m['domain'];
+                        $link_url = (strpos($raw_domain, 'http') === 0) ? $raw_domain : 'http://' . $raw_domain;
+                    ?>
                     <li style="padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 5px;">
                         <strong style="color: #60a5fa; font-size: 15px;"><?= htmlspecialchars($m['mgmp_name']) ?></strong>
-                        <small style="color: var(--text-muted);"><i class="fa-solid fa-link"></i> <?= htmlspecialchars($m['domain']) ?></small>
+                        <small style="color: var(--text-muted);">
+                            <i class="fa-solid fa-link"></i> <a href="<?= htmlspecialchars($link_url) ?>" target="_blank" style="color: var(--accent-blue); text-decoration: none;"><?= htmlspecialchars($raw_domain) ?></a>
+                        </small>
                     </li>
                     <?php endforeach; endif; ?>
                 </ul>
