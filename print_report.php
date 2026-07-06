@@ -133,7 +133,7 @@ $ai_data = generate_ai_insight($row['ksi_score'], $row['cs_ekspor'], $row['cs_im
         }
     </style>
 </head>
-<body onload="window.print()">
+<body onload="window.print()" onafterprint="window.close()">
     <div class="header">
         <h1>LAPORAN KINERJA MGMP</h1>
         <p>Mothership SI-LIAK - Sistem Informasi Learning Integration & Analitik Kinerja</p>
