@@ -20,6 +20,7 @@ if (!isset($data['api_secret']) || $data['api_secret'] !== API_SECRET_KEY) {
 }
 
 $mgmp_id = mysqli_real_escape_string($conn, $data['mgmp_id']);
+$mgmp_name = isset($data['mgmp_name']) ? mysqli_real_escape_string($conn, $data['mgmp_name']) : 'MGMP Muatan Lokal';
 $domain = mysqli_real_escape_string($conn, $data['domain']);
 $sync_time = mysqli_real_escape_string($conn, $data['sync_time']);
 
@@ -41,13 +42,14 @@ $cs_internal = (int)$cs['internal'];
 // UPSERT Query
 $query = "
     INSERT INTO national_telemetry (
-        mgmp_id, domain, total_guru, total_asesor, total_upload, total_download, 
+        mgmp_id, mgmp_name, domain, total_guru, total_asesor, total_upload, total_download, 
         total_login, spi_score, ksi_score, cs_ekspor, cs_impor, cs_internal, last_sync
     ) VALUES (
-        '$mgmp_id', '$domain', $total_guru, $total_asesor, $total_upload, $total_download,
+        '$mgmp_id', '$mgmp_name', '$domain', $total_guru, $total_asesor, $total_upload, $total_download,
         $total_login, $spi_score, $ksi_score, $cs_ekspor, $cs_impor, $cs_internal, '$sync_time'
     )
     ON DUPLICATE KEY UPDATE
+        mgmp_name = VALUES(mgmp_name),
         domain = VALUES(domain),
         total_guru = VALUES(total_guru),
         total_asesor = VALUES(total_asesor),

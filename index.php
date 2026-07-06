@@ -15,6 +15,13 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     exit;
 }
 
+// Proses Reset Data Telemetri
+if (isset($_GET['action']) && $_GET['action'] === 'reset') {
+    mysqli_query($conn, "TRUNCATE TABLE national_telemetry");
+    header("Location: index.php");
+    exit;
+}
+
 // Agregasi Nasional
 $aggr_query = mysqli_query($conn, "
     SELECT 
@@ -28,11 +35,23 @@ $aggr_query = mysqli_query($conn, "
 ");
 $aggr = mysqli_fetch_assoc($aggr_query);
 
+// Pagination Logic
+$items_per_page = 3;
+$current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($current_page < 1) $current_page = 1;
+$offset = ($current_page - 1) * $items_per_page;
+
+$count_query = mysqli_query($conn, "SELECT COUNT(*) as total FROM national_telemetry");
+$total_items = $count_query ? mysqli_fetch_assoc($count_query)['total'] : 0;
+$total_pages = ceil($total_items / $items_per_page);
+if ($total_pages < 1) $total_pages = 1;
+
 // Papan Peringkat MGMP (Berdasarkan SPI)
 $leaderboard = mysqli_query($conn, "
-    SELECT mgmp_id, domain, total_guru, spi_score, ksi_score, last_sync 
+    SELECT mgmp_id, mgmp_name, domain, total_guru, spi_score, ksi_score, last_sync 
     FROM national_telemetry 
     ORDER BY spi_score DESC
+    LIMIT $items_per_page OFFSET $offset
 ");
 ?>
 <!DOCTYPE html>
@@ -51,8 +70,8 @@ $leaderboard = mysqli_query($conn, "
             --bg-color: #0f172a;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --glass-bg: rgba(30, 41, 59, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-bg: rgba(0, 0, 0, 0.05); /* Super transparan ala HUD sexy */
+            --glass-border: rgba(255, 255, 255, 0.15);
             --accent-blue: #3b82f6;
             --accent-purple: #8b5cf6;
             --accent-green: #10b981;
@@ -72,7 +91,7 @@ $leaderboard = mysqli_query($conn, "
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
-            padding: 40px 20px;
+            padding: 160px 20px 40px 20px; /* Padding atas ditambah agar tidak tertutup header */
         }
 
         /* Animated background blobs */
@@ -91,6 +110,37 @@ $leaderboard = mysqli_query($conn, "
             50% { transform: translateY(-20px) scale(1.05); }
         }
 
+        @keyframes subtlePan {
+            0% { transform: scale(1) translate(0, 0); }
+            25% { transform: scale(1.05) translate(-1%, -1%); }
+            50% { transform: scale(1.1) translate(1%, -1%); }
+            75% { transform: scale(1.05) translate(-1%, 1%); }
+            100% { transform: scale(1) translate(0, 0); }
+        }
+
+        .bg-logo {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            object-fit: fill; /* Memaksa gambar ditarik memenuhi layar tanpa memotong */
+            opacity: 0.25;
+            z-index: 0;
+            pointer-events: none;
+            animation: subtlePan 12s ease-in-out infinite;
+        }
+
+        .floating-logo {
+            position: fixed;
+            top: 20px;
+            left: 30px;
+            height: 350px;
+            z-index: 1001;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+            pointer-events: none;
+        }
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -101,17 +151,22 @@ $leaderboard = mysqli_query($conn, "
         /* Glassmorphism Header */
         .header {
             background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
             border: 1px solid var(--glass-border);
-            padding: 30px 40px;
+            padding: 25px 40px;
             border-radius: 20px;
-            margin-bottom: 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             transition: transform 0.3s ease;
+            position: fixed;
+            top: 25px;
+            right: 20px;
+            width: auto;
+            gap: 40px;
+            z-index: 1000;
         }
         
         .header:hover {
@@ -121,7 +176,6 @@ $leaderboard = mysqli_query($conn, "
         .header h1 {
             font-size: 32px;
             font-weight: 700;
-            margin-bottom: 8px;
             background: linear-gradient(135deg, #60a5fa, #c084fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -191,8 +245,8 @@ $leaderboard = mysqli_query($conn, "
 
         .card {
             background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
             border: 1px solid var(--glass-border);
             padding: 30px;
             border-radius: 20px;
@@ -248,25 +302,56 @@ $leaderboard = mysqli_query($conn, "
             text-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
-        /* Leaderboard Section */
+        .leaderboard-wrapper {
+            position: fixed;
+            bottom: 25px;
+            right: 20px;
+            z-index: 100;
+        }
+
         .section-title {
             font-size: 24px;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
+            justify-content: center;
             gap: 12px;
             color: var(--text-main);
+            text-shadow: 0 4px 15px rgba(0,0,0,0.8);
         }
 
         .table-container {
             background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(2px);
+            -webkit-backdrop-filter: blur(2px);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
             overflow: hidden;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn-page {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        .btn-page:hover:not(.disabled) {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        .btn-page.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
         }
 
         table {
@@ -312,11 +397,16 @@ $leaderboard = mysqli_query($conn, "
         }
 
         .mgmp-id {
-            font-size: 16px;
+            font-size: 13px;
             font-weight: 600;
-            color: #fff;
-            display: block;
-            margin-bottom: 4px;
+            color: #60a5fa;
+            background: rgba(96, 165, 250, 0.1);
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            font-family: 'Courier New', Courier, monospace;
+            display: inline-block;
+            letter-spacing: 0.5px;
         }
 
         .mgmp-domain {
@@ -385,19 +475,28 @@ $leaderboard = mysqli_query($conn, "
     </style>
 </head>
 <body>
+    <!-- Background Wallpaper -->
+    <img src="LIAK.jpg" alt="Background SI-LIAK" class="bg-logo">
+    
     <!-- Background Blobs -->
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
 
+    <!-- Floating Logo di Pojok Kiri Atas -->
+    <img src="Logo%20SI-LIAK.png" alt="Logo SI-LIAK" class="floating-logo">
+
     <div class="container">
         <div class="header">
             <div>
-                <h1><i class="fa-solid fa-satellite-dish"></i> MOTHERSHIP SI-LIAK</h1>
-                <p>Pusat Komando & Analitik Big Data MGMP Nasional</p>
+                <h1 style="margin-bottom: 5px;">MOTHERSHIP SI-LIAK</h1>
+                <p>Sistem Informasi Learning Integration & Analitik Kinerja</p>
             </div>
             <div style="display: flex; gap: 10px;">
                 <button onclick="window.print()" class="btn-print">
                     <i class="fa-solid fa-print"></i> Cetak Laporan
+                </button>
+                <button onclick="if(confirm('YAKIN RESET SEMUA DATA TELEMETRI? Data akan terhapus dari server pusat dan kembali menjadi nol!')) window.location.href='?action=reset'" class="btn-logout" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
+                    <i class="fa-solid fa-trash-can"></i> Reset Data
                 </button>
                 <a href="?action=logout" class="btn-logout">
                     <i class="fa-solid fa-power-off"></i> Logout
@@ -405,68 +504,81 @@ $leaderboard = mysqli_query($conn, "
             </div>
         </div>
 
-        <div class="grid-cards">
-            <div class="card">
-                <div class="card-icon"><i class="fa-solid fa-server"></i></div>
-                <h3>Total MGMP</h3>
-                <div class="value"><?= number_format($aggr['total_nodes'] ?: 0) ?></div>
+        <div class="leaderboard-wrapper">
+            <h2 class="section-title">LEADERBOARD KINERJA MGMP</h2>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Peringkat</th>
+                            <th>Telemetry Code</th>
+                            <th>MGMP / Domain</th>
+                            <th>Jumlah Guru</th>
+                            <th>Skor SPI</th>
+                            <th>Skor KSI</th>
+                            <th>Update Terakhir</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php 
+                        $rank = $offset + 1;
+                        if(mysqli_num_rows($leaderboard) > 0) {
+                            while($row = mysqli_fetch_assoc($leaderboard)): 
+                        ?>
+                        <tr>
+                            <td class="rank">#<?= $rank++ ?></td>
+                            <td>
+                                <span class="mgmp-id"><i class="fa-solid fa-barcode"></i> <?= htmlspecialchars($row['mgmp_id']) ?></span>
+                            </td>
+                            <td>
+                                <div style="font-weight: 700; margin-bottom: 6px; color: #fff; font-size: 15px; text-transform: uppercase; letter-spacing: 0.5px;"><?= htmlspecialchars($row['mgmp_name']) ?></div>
+                                <?php 
+                                    $raw_domain = $row['domain'];
+                                    $link_url = (strpos($raw_domain, 'http') === 0) ? $raw_domain : 'http://' . $raw_domain;
+                                    $display_domain = str_replace(['http://','https://'], '', $raw_domain);
+                                ?>
+                                <a href="<?= htmlspecialchars($link_url) ?>" target="_blank" class="mgmp-domain" style="text-decoration:none;"><i class="fa-solid fa-link"></i> <?= htmlspecialchars($display_domain) ?></a>
+                            </td>
+                            <td><span class="badge"><i class="fa-solid fa-user-tie"></i> <?= number_format($row['total_guru']) ?> Guru</span></td>
+                            <td class="score-highlight"><?= number_format($row['spi_score']) ?> <span style="font-size:12px; color:var(--text-muted); font-weight:400;">Point</span></td>
+                            <td><?= number_format($row['ksi_score'], 2) ?></td>
+                            <td><small style="color:var(--text-muted);"><i class="fa-regular fa-clock"></i> <?= htmlspecialchars(date('d M Y, H:i', strtotime($row['last_sync']))) ?></small></td>
+                        </tr>
+                        <?php 
+                            endwhile; 
+                        } else {
+                            echo "<tr><td colspan='7'>
+                                <div class='empty-state'>
+                                    <i class='fa-solid fa-satellite'></i>
+                                    <h3>Menunggu Sinyal Telemetri...</h3>
+                                    <p>Belum ada data dari MGMP klien yang masuk ke Mothership.</p>
+                                </div>
+                            </td></tr>";
+                        }
+                        ?>
+                    </tbody>
+                </table>
             </div>
-            <div class="card">
-                <div class="card-icon"><i class="fa-solid fa-users"></i></div>
-                <h3>Total Guru</h3>
-                <div class="value"><?= number_format($aggr['nat_guru'] ?: 0) ?></div>
-            </div>
-            <div class="card">
-                <div class="card-icon"><i class="fa-solid fa-file-arrow-up"></i></div>
-                <h3>Total Materi</h3>
-                <div class="value"><?= number_format($aggr['nat_upload'] ?: 0) ?></div>
-            </div>
-        </div>
 
-        <h2 class="section-title"><i class="fa-solid fa-trophy" style="color: #fde047;"></i> Leaderboard Kinerja MGMP (SPI)</h2>
-        <div class="table-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Peringkat</th>
-                        <th>Domain</th>
-                        <th>Jumlah Guru</th>
-                        <th>Skor SPI</th>
-                        <th>Skor KSI</th>
-                        <th>Update Terakhir</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php 
-                    $rank = 1;
-                    if(mysqli_num_rows($leaderboard) > 0) {
-                        while($row = mysqli_fetch_assoc($leaderboard)): 
-                    ?>
-                    <tr>
-                        <td class="rank">#<?= $rank++ ?></td>
-                        <td>
-                            <span class="mgmp-id"><?= htmlspecialchars($row['mgmp_id']) ?></span>
-                            <a href="<?= htmlspecialchars($row['domain']) ?>" target="_blank" class="mgmp-domain" style="text-decoration:none;"><i class="fa-solid fa-link"></i> <?= htmlspecialchars(str_replace(['http://','https://'], '', $row['domain'])) ?></a>
-                        </td>
-                        <td><span class="badge"><i class="fa-solid fa-user-tie"></i> <?= number_format($row['total_guru']) ?> Guru</span></td>
-                        <td class="score-highlight"><?= number_format($row['spi_score']) ?> <span style="font-size:12px; color:var(--text-muted); font-weight:400;">pts</span></td>
-                        <td><?= number_format($row['ksi_score'], 2) ?></td>
-                        <td><small style="color:var(--text-muted);"><i class="fa-regular fa-clock"></i> <?= htmlspecialchars(date('d M Y, H:i', strtotime($row['last_sync']))) ?></small></td>
-                    </tr>
-                    <?php 
-                        endwhile; 
-                    } else {
-                        echo "<tr><td colspan='6'>
-                            <div class='empty-state'>
-                                <i class='fa-solid fa-satellite'></i>
-                                <h3>Menunggu Sinyal Telemetri...</h3>
-                                <p>Belum ada data dari MGMP klien yang masuk ke Mothership.</p>
-                            </div>
-                        </td></tr>";
-                    }
-                    ?>
-                </tbody>
-            </table>
+            <?php if ($total_pages > 1 || $total_items > $items_per_page): ?>
+            <div class="pagination" style="display:flex; justify-content:center; gap: 15px; margin-top: 15px;">
+                <?php if ($current_page > 1): ?>
+                    <a href="?page=<?= $current_page - 1 ?>" class="btn-page"><i class="fa-solid fa-chevron-left"></i> Sebelumnya</a>
+                <?php else: ?>
+                    <button class="btn-page disabled" disabled><i class="fa-solid fa-chevron-left"></i> Sebelumnya</button>
+                <?php endif; ?>
+                
+                <span style="color: var(--text-muted); align-self: center; font-size: 14px; background: rgba(0,0,0,0.3); padding: 5px 15px; border-radius: 20px;">
+                    Hal <?= $current_page ?> / <?= $total_pages ?>
+                </span>
+                
+                <?php if ($current_page < $total_pages): ?>
+                    <a href="?page=<?= $current_page + 1 ?>" class="btn-page">Selanjutnya <i class="fa-solid fa-chevron-right"></i></a>
+                <?php else: ?>
+                    <button class="btn-page disabled" disabled>Selanjutnya <i class="fa-solid fa-chevron-right"></i></button>
+                <?php endif; ?>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 </body>
