@@ -128,7 +128,8 @@ $ai_data = generate_ai_insight($row['ksi_score'], $row['cs_ekspor'], $row['cs_im
             color: #1e40af;
         }
         @media print {
-            body { padding: 0; }
+            @page { margin: 0; }
+            body { padding: 0; margin: 2cm; }
             button { display: none; }
         }
     </style>
