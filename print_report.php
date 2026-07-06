@@ -156,7 +156,7 @@ $ai_data = generate_ai_insight($row['ksi_score'], $row['cs_ekspor'], $row['cs_im
                 <td><?= htmlspecialchars($row['domain']) ?></td>
             </tr>
             <tr>
-                <th>Populasi Guru</th>
+                <th>Jumlah Guru</th>
                 <td><?= number_format($row['total_guru']) ?> Guru</td>
             </tr>
             <tr>
