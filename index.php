@@ -522,10 +522,13 @@ $leaderboard = mysqli_query($conn, "
         .ai-status-perlu-perhatian { background: rgba(244, 63, 94, 0.2); color: #fb7185; border: 1px solid #f43f5e; }
         .ai-close {
             position: absolute; top: 20px; right: 20px;
-            background: none; border: none; color: var(--text-muted);
-            font-size: 20px; cursor: pointer; transition: 0.2s;
+            background: rgba(255, 255, 255, 0.1); border: none; color: #f8fafc;
+            font-size: 22px; cursor: pointer; transition: 0.2s;
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            z-index: 100;
         }
-        .ai-close:hover { color: #fff; }
+        .ai-close:hover { background: rgba(239, 68, 68, 0.8); color: #fff; transform: scale(1.1); }
         .btn-ai {
             background: linear-gradient(135deg, #8b5cf6, #d946ef);
             color: white; border: none; padding: 6px 12px; border-radius: 6px;
