@@ -48,7 +48,7 @@ if ($total_pages < 1) $total_pages = 1;
 
 // Papan Peringkat MGMP (Berdasarkan SPI)
 $leaderboard = mysqli_query($conn, "
-    SELECT mgmp_id, mgmp_name, domain, total_guru, spi_score, ksi_score, last_sync 
+    SELECT mgmp_id, mgmp_name, domain, total_guru, spi_score, ksi_score, cs_ekspor, cs_impor, cs_internal, last_sync 
     FROM national_telemetry 
     ORDER BY spi_score DESC
     LIMIT $items_per_page OFFSET $offset
@@ -516,6 +516,7 @@ $leaderboard = mysqli_query($conn, "
                             <th>Jumlah Guru</th>
                             <th>Skor SPI</th>
                             <th>Skor KSI</th>
+                            <th>Interaksi Lintas</th>
                             <th>Update Terakhir</th>
                         </tr>
                     </thead>
@@ -542,6 +543,11 @@ $leaderboard = mysqli_query($conn, "
                             <td><span class="badge"><i class="fa-solid fa-user-tie"></i> <?= number_format($row['total_guru']) ?> Guru</span></td>
                             <td class="score-highlight"><?= number_format($row['spi_score']) ?> <span style="font-size:12px; color:var(--text-muted); font-weight:400;">Point</span></td>
                             <td><?= number_format($row['ksi_score'], 2) ?></td>
+                            <td style="font-size: 13px; line-height: 1.6; text-align: left; min-width: 120px;">
+                                <span style="color:var(--accent-green);"><i class="fa-solid fa-arrow-up-right-from-square" style="width: 14px;"></i> Ekspor: <?= number_format($row['cs_ekspor']) ?></span><br>
+                                <span style="color:var(--accent-blue);"><i class="fa-solid fa-arrow-down-to-bracket" style="width: 14px;"></i> Impor: <?= number_format($row['cs_impor']) ?></span><br>
+                                <span style="color:var(--text-muted);"><i class="fa-solid fa-rotate" style="width: 14px;"></i> Internal: <?= number_format($row['cs_internal']) ?></span>
+                            </td>
                             <td><small style="color:var(--text-muted);"><i class="fa-regular fa-clock"></i> <?= htmlspecialchars(date('d M Y, H:i', strtotime($row['last_sync']))) ?></small></td>
                         </tr>
                         <?php 
