@@ -644,9 +644,9 @@ $leaderboard = mysqli_query($conn, "
                             <td class="score-highlight"><?= number_format($row['spi_score']) ?> <span style="font-size:12px; color:var(--text-muted); font-weight:400;">Point</span></td>
                             <td><?= number_format($row['ksi_score'], 2) ?></td>
                             <td style="font-size: 13px; line-height: 1.6; text-align: left; min-width: 120px;">
-                                <span style="color:var(--accent-green);"><i class="fa-solid fa-upload" style="width: 14px;"></i> Ekspor: <?= number_format($row['cs_ekspor']) ?></span><br>
-                                <span style="color:var(--accent-blue);"><i class="fa-solid fa-download" style="width: 14px;"></i> Impor: <?= number_format($row['cs_impor']) ?></span><br>
-                                <span style="color:var(--text-muted);"><i class="fa-solid fa-sync" style="width: 14px;"></i> Internal: <?= number_format($row['cs_internal']) ?></span>
+                                <span style="color:var(--accent-green);">📤 Ekspor: <?= number_format($row['cs_ekspor']) ?></span><br>
+                                <span style="color:var(--accent-blue);">📥 Impor: <?= number_format($row['cs_impor']) ?></span><br>
+                                <span style="color:var(--text-muted);">🔄 Internal: <?= number_format($row['cs_internal']) ?></span>
                             </td>
                             <td><small style="color:var(--text-muted);"><i class="fa-regular fa-clock"></i> <?= htmlspecialchars(date('d M Y, H:i', strtotime($row['last_sync']))) ?></small></td>
                             <td>
