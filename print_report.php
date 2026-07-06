@@ -207,7 +207,7 @@ $ai_data = generate_ai_insight($row['ksi_score'], $row['cs_ekspor'], $row['cs_im
     <div style="text-align: right; margin-top: 30px; color: #9ca3af; font-size: 12px; page-break-inside: avoid;">
         <div style="margin-bottom: 15px;">Dicetak pada: <?= date('d M Y H:i:s') ?></div>
         <img src="Logo%20SI-LIAK.png" alt="Logo SI-LIAK" style="height: 85px; margin-bottom: 5px;">
-        <div style="font-weight: 600; color: #6b7280; font-size: 11px;">Sistem Arsitek: Agus Ambara Aditya Jaya</div>
+        <div style="font-weight: 600; color: #4b5563; font-size: 11px; font-style: italic;">Arsitek Sistem: Agus Ambara Aditya Jaya</div>
     </div>
 </body>
 </html>
