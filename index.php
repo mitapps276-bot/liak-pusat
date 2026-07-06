@@ -2,6 +2,42 @@
 session_start();
 require_once 'config/database.php';
 
+// AI Rule-Based Helper
+function generate_ai_insight($ksi, $ekspor, $impor, $internal) {
+    // 1. Analisis Partisipasi
+    $partisipasi_status = "";
+    if ($ksi >= 10) {
+        $partisipasi_status = "Sangat Sehat";
+        $partisipasi_teks = "Partisipasi guru sangat aktif. Jadikan MGMP percontohan (Role Model).";
+    } elseif ($ksi >= 4) {
+        $partisipasi_status = "Sehat";
+        $partisipasi_teks = "Partisipasi berjalan baik dan stabil. Pertahankan momentum kolaborasi.";
+    } else {
+        $partisipasi_status = "Perlu Perhatian";
+        $partisipasi_teks = "Tingkat partisipasi minim. Perlu pendampingan intensif dari pengawas untuk memotivasi.";
+    }
+
+    // 2. Analisis Kolaborasi
+    $kolaborasi_teks = "";
+    $total_luar = $ekspor + $impor;
+    if ($ekspor == 0 && $impor == 0 && $internal == 0) {
+        $kolaborasi_teks = "Tipe Pasif: Belum ada interaksi berbagi materi yang tercatat.";
+    } elseif ($ekspor > $impor && $ekspor > $internal) {
+        $kolaborasi_teks = "Tipe Produsen: Guru produktif membagikan materi ke sekolah lain. Berdayakan untuk menyusun modul standar kota.";
+    } elseif ($impor > $ekspor && $impor > $internal) {
+        $kolaborasi_teks = "Tipe Konsumen: Minat belajar tinggi (mengambil referensi luar), namun perlu distimulasi untuk produksi materi sendiri.";
+    } elseif ($internal > $total_luar) {
+        $kolaborasi_teks = "Tipe Terisolasi: Kolaborasi kuat, tapi hanya berputar di 1 sekolah. Gelar forum diskusi lintas sekolah.";
+    } else {
+        $kolaborasi_teks = "Tipe Seimbang: Pertukaran materi internal dan lintas sekolah berjalan seimbang.";
+    }
+    
+    return [
+        'status' => $partisipasi_status,
+        'insight' => $partisipasi_teks . " " . $kolaborasi_teks
+    ];
+}
+
 // Cek Keamanan Akses Dasbor
 if (!isset($_SESSION['mothership_logged_in']) || $_SESSION['mothership_logged_in'] !== true) {
     header("Location: login.php");
@@ -472,6 +508,45 @@ $leaderboard = mysqli_query($conn, "
                 overflow-x: auto;
             }
         }
+        /* Modal AI Insight */
+        .ai-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: none; justify-content: center; align-items: center;
+            z-index: 9999; opacity: 0; transition: opacity 0.3s;
+        }
+        .ai-modal-overlay.active { display: flex; opacity: 1; }
+        .ai-modal {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px; padding: 30px;
+            max-width: 500px; width: 90%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            position: relative;
+            transform: translateY(20px); transition: transform 0.3s;
+        }
+        .ai-modal-overlay.active .ai-modal { transform: translateY(0); }
+        .ai-modal h3 { color: var(--accent-purple); margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .ai-status-badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 15px; }
+        .ai-status-sangat-sehat { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+        .ai-status-sehat { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6; }
+        .ai-status-perlu-perhatian { background: rgba(244, 63, 94, 0.2); color: #fb7185; border: 1px solid #f43f5e; }
+        .ai-close {
+            position: absolute; top: 20px; right: 20px;
+            background: none; border: none; color: var(--text-muted);
+            font-size: 20px; cursor: pointer; transition: 0.2s;
+        }
+        .ai-close:hover { color: #fff; }
+        .btn-ai {
+            background: linear-gradient(135deg, #8b5cf6, #d946ef);
+            color: white; border: none; padding: 6px 12px; border-radius: 6px;
+            font-family: inherit; font-size: 12px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3); transition: 0.3s;
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        .btn-ai:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5); }
     </style>
 </head>
 <body>
@@ -518,6 +593,7 @@ $leaderboard = mysqli_query($conn, "
                             <th>Skor KSI</th>
                             <th>Interaksi Lintas</th>
                             <th>Update Terakhir</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -525,6 +601,8 @@ $leaderboard = mysqli_query($conn, "
                         $rank = $offset + 1;
                         if(mysqli_num_rows($leaderboard) > 0) {
                             while($row = mysqli_fetch_assoc($leaderboard)): 
+                                $ai_data = generate_ai_insight($row['ksi_score'], $row['cs_ekspor'], $row['cs_impor'], $row['cs_internal']);
+                                $status_class = strtolower(str_replace(' ', '-', $ai_data['status']));
                         ?>
                         <tr>
                             <td class="rank">#<?= $rank++ ?></td>
@@ -549,6 +627,11 @@ $leaderboard = mysqli_query($conn, "
                                 <span style="color:var(--text-muted);"><i class="fa-solid fa-rotate" style="width: 14px;"></i> Internal: <?= number_format($row['cs_internal']) ?></span>
                             </td>
                             <td><small style="color:var(--text-muted);"><i class="fa-regular fa-clock"></i> <?= htmlspecialchars(date('d M Y, H:i', strtotime($row['last_sync']))) ?></small></td>
+                            <td>
+                                <button class="btn-ai" onclick="showAiModal('<?= htmlspecialchars($row['mgmp_name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($ai_data['status'], ENT_QUOTES) ?>', '<?= htmlspecialchars($ai_data['insight'], ENT_QUOTES) ?>', '<?= $status_class ?>')">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> AI Insight
+                                </button>
+                            </td>
                         </tr>
                         <?php 
                             endwhile; 
@@ -587,5 +670,29 @@ $leaderboard = mysqli_query($conn, "
             <?php endif; ?>
         </div>
     </div>
+
+    <!-- AI Modal -->
+    <div class="ai-modal-overlay" id="aiModal" onclick="closeAiModal(event)">
+        <div class="ai-modal" onclick="event.stopPropagation()">
+            <button class="ai-close" onclick="closeAiModal()"><i class="fa-solid fa-xmark"></i></button>
+            <h3><i class="fa-solid fa-robot"></i> Analisis AI - <span id="aiMgmpName"></span></h3>
+            <div id="aiStatus" class="ai-status-badge"></div>
+            <p id="aiInsightText" style="line-height: 1.6; color: var(--text-main); font-size: 15px;"></p>
+        </div>
+    </div>
+
+    <script>
+        function showAiModal(name, status, insight, statusClass) {
+            document.getElementById('aiMgmpName').innerText = name;
+            const statusEl = document.getElementById('aiStatus');
+            statusEl.innerText = status;
+            statusEl.className = 'ai-status-badge ai-status-' + statusClass;
+            document.getElementById('aiInsightText').innerText = insight;
+            document.getElementById('aiModal').classList.add('active');
+        }
+        function closeAiModal(e) {
+            document.getElementById('aiModal').classList.remove('active');
+        }
+    </script>
 </body>
 </html>
