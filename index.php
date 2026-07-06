@@ -675,7 +675,7 @@ $leaderboard = mysqli_query($conn, "
     <div class="ai-modal-overlay" id="aiModal" onclick="closeAiModal(event)">
         <div class="ai-modal" onclick="event.stopPropagation()">
             <button class="ai-close" onclick="closeAiModal()"><i class="fa-solid fa-xmark"></i></button>
-            <h3><i class="fa-solid fa-robot"></i> Kecerdasan Buatan SI-LIAK Menyatakan <span id="aiMgmpName"></span></h3>
+            <h3><img src="Logo%20SI-LIAK.png" alt="Logo SI-LIAK" style="height: 24px; width: 24px; vertical-align: middle;"> Kecerdasan Buatan SI-LIAK Menyatakan <span id="aiMgmpName"></span></h3>
             <div id="aiStatus" class="ai-status-badge"></div>
             <p id="aiInsightText" style="line-height: 1.6; color: var(--text-main); font-size: 15px;"></p>
         </div>
