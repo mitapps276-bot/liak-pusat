@@ -567,9 +567,6 @@ $leaderboard = mysqli_query($conn, "
                 <p>Sistem Informasi Learning Integration & Analitik Kinerja</p>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button onclick="window.print()" class="btn-print">
-                    <i class="fa-solid fa-print"></i> Cetak Laporan
-                </button>
                 <button onclick="if(confirm('YAKIN RESET SEMUA DATA TELEMETRI? Data akan terhapus dari server pusat dan kembali menjadi nol!')) window.location.href='?action=reset'" class="btn-logout" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
                     <i class="fa-solid fa-trash-can"></i> Reset Data
                 </button>
@@ -640,9 +637,14 @@ $leaderboard = mysqli_query($conn, "
                             </td>
                             <td><small style="color:var(--text-muted);"><i class="fa-regular fa-clock"></i> <?= htmlspecialchars(date('d M Y, H:i', strtotime($row['last_sync']))) ?></small></td>
                             <td>
-                                <button class="btn-ai" onclick="showAiModal('<?= htmlspecialchars($row['mgmp_name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($ai_data['status'], ENT_QUOTES) ?>', '<?= htmlspecialchars($ai_data['insight'], ENT_QUOTES) ?>', '<?= $status_class ?>')">
-                                    <i class="fa-solid fa-wand-magic-sparkles"></i> SI-LIAK Insight
-                                </button>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <button class="btn-ai" onclick="showAiModal('<?= htmlspecialchars($row['mgmp_name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($ai_data['status'], ENT_QUOTES) ?>', '<?= htmlspecialchars($ai_data['insight'], ENT_QUOTES) ?>', '<?= $status_class ?>')">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i> SI-LIAK Insight
+                                    </button>
+                                    <button onclick="window.print()" class="btn-print" style="padding: 8px 12px; font-size: 12px; border-radius: 6px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">
+                                        <i class="fa-solid fa-print"></i> Cetak
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                         <?php 
