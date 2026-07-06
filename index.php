@@ -641,7 +641,7 @@ $leaderboard = mysqli_query($conn, "
                                     <button class="btn-ai" onclick="showAiModal('<?= htmlspecialchars($row['mgmp_name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($ai_data['status'], ENT_QUOTES) ?>', '<?= htmlspecialchars($ai_data['insight'], ENT_QUOTES) ?>', '<?= $status_class ?>')">
                                         <i class="fa-solid fa-wand-magic-sparkles"></i> SI-LIAK Insight
                                     </button>
-                                    <button onclick="window.print()" class="btn-print" style="padding: 8px 12px; font-size: 12px; border-radius: 6px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">
+                                    <button onclick="window.open('print_report.php?mgmp_id=<?= urlencode($row['mgmp_id']) ?>', '_blank')" class="btn-print" style="padding: 8px 12px; font-size: 12px; border-radius: 6px; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">
                                         <i class="fa-solid fa-print"></i> Cetak
                                     </button>
                                 </div>
