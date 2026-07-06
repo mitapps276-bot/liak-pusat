@@ -589,20 +589,31 @@ $leaderboard = mysqli_query($conn, "
             </div>
         </div>
 
-        <div class="leaderboard-wrapper">
-            <div style="display: grid; grid-template-columns: 1fr auto 1fr; align-items: end; margin-bottom: 15px;">
-                <div></div>
-                <h2 class="section-title" style="margin-bottom: 0; text-align: center;">LEADERBOARD KINERJA MGMP</h2>
-                <div style="display: flex; justify-content: flex-end;">
-                    <div class="card" style="padding: 15px 25px; display: flex; align-items: center; gap: 15px; border-radius: 15px; width: max-content; cursor: pointer; transition: 0.3s; margin: 0;" onclick="showMgmpListModal()" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" title="Lihat Daftar MGMP">
-                        <div class="card-icon" style="font-size: 32px; color: var(--accent-blue); margin-bottom: 0;"><i class="fa-solid fa-satellite-dish"></i></div>
-                        <div style="text-align: right;">
-                            <h3 style="font-size: 12px; margin-bottom: 5px;">Total MGMP Terhubung</h3>
-                            <div class="value" style="font-size: 28px; color: var(--accent-blue);"><?= number_format($aggr['total_nodes'] ?? 0) ?></div>
-                        </div>
-                    </div>
-                </div>
+        <div class="grid-cards">
+            <div class="card" onclick="showMgmpListModal()" style="cursor: pointer;" title="Lihat Daftar MGMP">
+                <div class="card-icon"><i class="fa-solid fa-network-wired"></i></div>
+                <h3>MGMP Bergabung</h3>
+                <div class="value"><?= number_format($aggr['total_nodes'] ?? 0) ?></div>
             </div>
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-users"></i></div>
+                <h3>Populasi Guru</h3>
+                <div class="value"><?= number_format($aggr['nat_guru'] ?? 0) ?></div>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-file-export"></i></div>
+                <h3>Total Ekspor</h3>
+                <div class="value"><?= number_format($aggr['nat_ekspor'] ?? 0) ?></div>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-file-import"></i></div>
+                <h3>Total Impor</h3>
+                <div class="value"><?= number_format($aggr['nat_impor'] ?? 0) ?></div>
+            </div>
+        </div>
+
+        <div class="leaderboard-wrapper">
+            <h2 class="section-title" style="margin-bottom: 20px;"><i class="fa-solid fa-trophy" style="color: #fde047;"></i> LEADERBOARD KINERJA MGMP</h2>
             <div class="table-container">
                 <table>
                     <thead>
