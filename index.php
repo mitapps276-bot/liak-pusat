@@ -582,7 +582,7 @@ $leaderboard = mysqli_query($conn, "
         <div class="leaderboard-wrapper">
             <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;">
                 <h2 class="section-title" style="margin-bottom: 0;">LEADERBOARD KINERJA MGMP</h2>
-                <div class="card" style="padding: 15px 25px; display: flex; align-items: center; gap: 15px; border-radius: 15px; width: max-content;">
+                <div class="card" style="padding: 15px 25px; display: flex; align-items: center; gap: 15px; border-radius: 15px; width: max-content; cursor: pointer; transition: 0.3s;" onclick="showMgmpListModal()" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" title="Lihat Daftar MGMP">
                     <div class="card-icon" style="font-size: 32px; color: var(--accent-blue); margin-bottom: 0;"><i class="fa-solid fa-satellite-dish"></i></div>
                     <div style="text-align: right;">
                         <h3 style="font-size: 12px; margin-bottom: 5px;">Total MGMP Terhubung</h3>
@@ -680,6 +680,33 @@ $leaderboard = mysqli_query($conn, "
         </div>
     </div>
 
+    <?php
+    $all_mgmp_query = mysqli_query($conn, "SELECT mgmp_name, domain FROM national_telemetry ORDER BY mgmp_name ASC");
+    $all_mgmps = [];
+    while($r = mysqli_fetch_assoc($all_mgmp_query)) {
+        $all_mgmps[] = $r;
+    }
+    ?>
+    <!-- MGMP List Modal -->
+    <div class="ai-modal-overlay" id="mgmpListModal" onclick="closeMgmpListModal(event)">
+        <div class="ai-modal" onclick="event.stopPropagation()">
+            <button class="ai-close" onclick="closeMgmpListModal()"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="margin-bottom: 20px;"><i class="fa-solid fa-network-wired"></i> Daftar MGMP Terhubung</h3>
+            <div style="max-height: 400px; overflow-y: auto; text-align: left; padding-right: 10px;">
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    <?php if(empty($all_mgmps)): ?>
+                        <li style="padding: 10px; color: var(--text-muted); text-align: center;">Belum ada MGMP yang terhubung.</li>
+                    <?php else: foreach($all_mgmps as $m): ?>
+                    <li style="padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column; gap: 5px;">
+                        <strong style="color: #60a5fa; font-size: 15px;"><?= htmlspecialchars($m['mgmp_name']) ?></strong>
+                        <small style="color: var(--text-muted);"><i class="fa-solid fa-link"></i> <?= htmlspecialchars($m['domain']) ?></small>
+                    </li>
+                    <?php endforeach; endif; ?>
+                </ul>
+            </div>
+        </div>
+    </div>
+
     <!-- AI Modal -->
     <div class="ai-modal-overlay" id="aiModal" onclick="closeAiModal(event)">
         <div class="ai-modal" onclick="event.stopPropagation()">
@@ -691,6 +718,13 @@ $leaderboard = mysqli_query($conn, "
     </div>
 
     <script>
+        function showMgmpListModal() {
+            document.getElementById('mgmpListModal').classList.add('active');
+        }
+        function closeMgmpListModal(e) {
+            document.getElementById('mgmpListModal').classList.remove('active');
+        }
+
         function showAiModal(name, status, insight, statusClass) {
             document.getElementById('aiMgmpName').innerText = name;
             const statusEl = document.getElementById('aiStatus');
