@@ -32,7 +32,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'logou
 // Proses Reset Data Telemetri — hanya via POST + CSRF (mencegah aksi destruktif via link)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'reset') {
     if (csrf_verify()) {
-        mysqli_query($conn, "TRUNCATE TABLE national_telemetry");
+        $reset_user = trim($_POST['reset_username'] ?? '');
+        $reset_pass = $_POST['reset_password'] ?? '';
+        
+        if ($reset_user === MOTHERSHIP_USER && password_verify($reset_pass, MOTHERSHIP_PASS_HASH)) {
+            mysqli_query($conn, "TRUNCATE TABLE national_telemetry");
+            $_SESSION['reset_success'] = "Seluruh data telemetri berhasil dihapus secara permanen.";
+        } else {
+            $_SESSION['reset_error'] = "Username atau password salah! Penghapusan data dibatalkan.";
+        }
         header("Location: index.php");
         exit;
     }
@@ -551,6 +559,17 @@ $leaderboard = mysqli_query($conn, "
     <img src="Logo%20SI-LIAK.png" alt="Logo SI-LIAK" class="floating-logo">
 
     <div class="container">
+        <?php if(!empty($_SESSION['reset_error'])): ?>
+            <div style="background: rgba(239,68,68,0.2); border: 1px solid #ef4444; color: #fca5a5; padding: 15px; border-radius: 10px; margin-bottom: 20px; margin-top: 20px; text-align: center;">
+                <i class="fa-solid fa-triangle-exclamation"></i> <?= $_SESSION['reset_error'] ?>
+            </div>
+            <?php unset($_SESSION['reset_error']); ?>
+        <?php elseif(!empty($_SESSION['reset_success'])): ?>
+            <div style="background: rgba(16,185,129,0.2); border: 1px solid #10b981; color: #6ee7b7; padding: 15px; border-radius: 10px; margin-bottom: 20px; margin-top: 20px; text-align: center;">
+                <i class="fa-solid fa-check-circle"></i> <?= $_SESSION['reset_success'] ?>
+            </div>
+            <?php unset($_SESSION['reset_success']); ?>
+        <?php endif; ?>
         <div class="header">
             <div>
                 <h1 style="margin-bottom: 5px;">MOTHERSHIP SI-LIAK</h1>
@@ -785,11 +804,12 @@ $leaderboard = mysqli_query($conn, "
             }
         }
 
-        // --- Logika 3 Langkah Reset Data ---
+        // --- Logika 4 Langkah Reset Data ---
         function openResetModal() {
             document.getElementById('resetStep1').style.display = 'block';
             document.getElementById('resetStep2').style.display = 'none';
             document.getElementById('resetStep3').style.display = 'none';
+            document.getElementById('resetStep4').style.display = 'none';
             document.getElementById('resetConfirmText').value = '';
             checkResetConfirm(); // set disabled
             document.getElementById('resetModal').classList.add('active');
@@ -807,12 +827,16 @@ $leaderboard = mysqli_query($conn, "
                 document.getElementById('resetStep2').style.display = 'none';
                 document.getElementById('resetStep3').style.display = 'block';
                 document.getElementById('resetConfirmText').focus();
+            } else if(step === 4) {
+                document.getElementById('resetStep3').style.display = 'none';
+                document.getElementById('resetStep4').style.display = 'block';
+                document.getElementsByName('reset_username')[0].focus();
             }
         }
 
         function checkResetConfirm() {
             const val = document.getElementById('resetConfirmText').value;
-            const btn = document.getElementById('btnExecuteReset');
+            const btn = document.getElementById('btnNextStep4');
             if(val === 'RESET') {
                 btn.disabled = false;
                 btn.style.opacity = '1';
@@ -825,7 +849,7 @@ $leaderboard = mysqli_query($conn, "
         }
     </script>
 
-    <!-- Reset 3-Step Modal -->
+    <!-- Reset 4-Step Modal -->
     <div class="ai-modal-overlay" id="resetModal" onclick="closeResetModal(event)">
         <div class="ai-modal" onclick="event.stopPropagation()">
             <button class="ai-close" type="button" onclick="closeResetModal()"><i class="fa-solid fa-xmark"></i></button>
@@ -833,7 +857,7 @@ $leaderboard = mysqli_query($conn, "
             
             <!-- Step 1 -->
             <div id="resetStep1">
-                <p style="margin-bottom: 20px; line-height: 1.6; color: var(--text-main); font-size: 15px;">Anda akan menghapus <strong>seluruh data telemetri nasional</strong>. Data yang dihapus tidak dapat dikembalikan lagi.<br><br><small style="color: var(--text-muted);">(Langkah 1 dari 3)</small></p>
+                <p style="margin-bottom: 20px; line-height: 1.6; color: var(--text-main); font-size: 15px;">Anda akan menghapus <strong>seluruh data telemetri nasional</strong>. Data yang dihapus tidak dapat dikembalikan lagi.<br><br><small style="color: var(--text-muted);">(Langkah 1 dari 4)</small></p>
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
                     <button class="btn-print" onclick="closeResetModal()" style="background: #334155; box-shadow: none;">Batal</button>
                     <button class="btn-logout" onclick="nextResetStep(2)" style="background: #f59e0b;">Lanjutkan</button>
@@ -842,7 +866,7 @@ $leaderboard = mysqli_query($conn, "
 
             <!-- Step 2 -->
             <div id="resetStep2" style="display: none;">
-                <p style="margin-bottom: 20px; line-height: 1.6; color: var(--text-main); font-size: 15px;">Semua skor dan capaian MGMP akan kembali menjadi 0 (Nol) untuk seluruh metrik. Apakah Anda benar-benar yakin ingin melakukan ini?<br><br><small style="color: var(--text-muted);">(Langkah 2 dari 3)</small></p>
+                <p style="margin-bottom: 20px; line-height: 1.6; color: var(--text-main); font-size: 15px;">Semua skor dan capaian MGMP akan kembali menjadi 0 (Nol) untuk seluruh metrik. Apakah Anda benar-benar yakin ingin melakukan ini?<br><br><small style="color: var(--text-muted);">(Langkah 2 dari 4)</small></p>
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
                     <button class="btn-print" onclick="closeResetModal()" style="background: #334155; box-shadow: none;">Batal</button>
                     <button class="btn-logout" onclick="nextResetStep(3)" style="background: #f97316;">Ya, Saya Yakin</button>
@@ -851,15 +875,31 @@ $leaderboard = mysqli_query($conn, "
 
             <!-- Step 3 -->
             <div id="resetStep3" style="display: none;">
-                <p style="margin-bottom: 15px; line-height: 1.6; color: var(--text-main); font-size: 15px;">Untuk mengeksekusi penghapusan, silakan ketik kata <strong>RESET</strong> di bawah ini:<br><small style="color: var(--text-muted);">(Langkah 3 dari 3)</small></p>
+                <p style="margin-bottom: 15px; line-height: 1.6; color: var(--text-main); font-size: 15px;">Silakan ketik kata <strong>RESET</strong> di bawah ini:<br><small style="color: var(--text-muted);">(Langkah 3 dari 4)</small></p>
                 <input type="text" id="resetConfirmText" onkeyup="checkResetConfirm()" placeholder="Ketik RESET" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: white; outline: none; font-family: inherit; font-size: 15px;">
+                
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" class="btn-print" onclick="closeResetModal()" style="background: #334155; box-shadow: none;">Batal</button>
+                    <button type="button" id="btnNextStep4" class="btn-logout" onclick="nextResetStep(4)" style="background: #ef4444; opacity: 0.5; cursor: not-allowed;" disabled>Lanjutkan</button>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div id="resetStep4" style="display: none;">
+                <p style="margin-bottom: 15px; line-height: 1.6; color: var(--text-main); font-size: 15px;"><strong>Otorisasi Pamungkas:</strong> Masukkan kredensial Superadmin SI-LIAK Pusat Anda untuk mengeksekusi reset.<br><small style="color: var(--text-muted);">(Langkah 4 dari 4)</small></p>
                 
                 <form method="POST" id="formResetData">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                     <input type="hidden" name="action" value="reset">
+                    
+                    <input type="text" name="reset_username" placeholder="Username" required style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: white; outline: none; font-family: inherit; font-size: 15px;">
+                    <input type="password" name="reset_password" placeholder="Password" required style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: white; outline: none; font-family: inherit; font-size: 15px;">
+
                     <div style="display: flex; gap: 10px; justify-content: flex-end;">
                         <button type="button" class="btn-print" onclick="closeResetModal()" style="background: #334155; box-shadow: none;">Batal</button>
-                        <button type="submit" id="btnExecuteReset" class="btn-logout" style="background: #ef4444; opacity: 0.5; cursor: not-allowed;" disabled>Eksekusi Hapus Data</button>
+                        <button type="submit" class="btn-logout" style="background: #dc2626; box-shadow: 0 4px 15px rgba(220, 38, 38, 0.4);">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Eksekusi Hapus Data
+                        </button>
                     </div>
                 </form>
             </div>
