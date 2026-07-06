@@ -579,6 +579,29 @@ $leaderboard = mysqli_query($conn, "
             </div>
         </div>
 
+        <div class="grid-cards">
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-network-wired"></i></div>
+                <h3>MGMP Bergabung</h3>
+                <div class="value"><?= number_format($aggr['total_nodes'] ?? 0) ?></div>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-users"></i></div>
+                <h3>Populasi Guru</h3>
+                <div class="value"><?= number_format($aggr['nat_guru'] ?? 0) ?></div>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-file-arrow-up"></i></div>
+                <h3>Materi Beredar</h3>
+                <div class="value"><?= number_format($aggr['nat_upload'] ?? 0) ?></div>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fa-solid fa-download"></i></div>
+                <h3>Total Unduhan</h3>
+                <div class="value"><?= number_format($aggr['nat_download'] ?? 0) ?></div>
+            </div>
+        </div>
+
         <div class="leaderboard-wrapper">
             <h2 class="section-title">LEADERBOARD KINERJA MGMP</h2>
             <div class="table-container">
