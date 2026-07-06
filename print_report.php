@@ -135,6 +135,7 @@ $ai_data = generate_ai_insight($row['ksi_score'], $row['cs_ekspor'], $row['cs_im
 </head>
 <body onload="window.print()">
     <div class="header">
+        <img src="Logo%20SI-LIAK.png" alt="Logo SI-LIAK" style="height: 60px; margin-bottom: 15px;">
         <h1>LAPORAN KINERJA MGMP</h1>
         <p>Mothership SI-LIAK - Sistem Informasi Learning Integration & Analitik Kinerja</p>
     </div>
