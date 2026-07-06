@@ -135,7 +135,6 @@ $ai_data = generate_ai_insight($row['ksi_score'], $row['cs_ekspor'], $row['cs_im
 </head>
 <body onload="window.print()">
     <div class="header">
-        <img src="Logo%20SI-LIAK.png" alt="Logo SI-LIAK" style="height: 60px; margin-bottom: 15px;">
         <h1>LAPORAN KINERJA MGMP</h1>
         <p>Mothership SI-LIAK - Sistem Informasi Learning Integration & Analitik Kinerja</p>
     </div>
@@ -201,7 +200,8 @@ $ai_data = generate_ai_insight($row['ksi_score'], $row['cs_ekspor'], $row['cs_im
     </div>
     
     <div style="text-align: right; margin-top: 50px; color: #9ca3af; font-size: 12px;">
-        Dicetak pada: <?= date('d M Y H:i:s') ?>
+        <div style="margin-bottom: 15px;">Dicetak pada: <?= date('d M Y H:i:s') ?></div>
+        <img src="Logo%20SI-LIAK.png" alt="Logo SI-LIAK" style="height: 85px;">
     </div>
 </body>
 </html>
