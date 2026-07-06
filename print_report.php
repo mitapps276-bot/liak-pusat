@@ -129,7 +129,11 @@ $ai_data = generate_ai_insight($row['ksi_score'], $row['cs_ekspor'], $row['cs_im
         }
         @media print {
             @page { margin: 0; }
-            body { padding: 0; margin: 2cm; }
+            body { padding: 0; margin: 1cm 1.5cm; font-size: 13px; }
+            .report-section, .insight-box { page-break-inside: avoid; }
+            th, td { padding: 8px 12px; }
+            .header { margin-bottom: 15px; padding-bottom: 15px; }
+            .report-section { margin-bottom: 15px; }
             button { display: none; }
         }
     </style>
@@ -200,7 +204,7 @@ $ai_data = generate_ai_insight($row['ksi_score'], $row['cs_ekspor'], $row['cs_im
         </div>
     </div>
     
-    <div style="text-align: right; margin-top: 50px; color: #9ca3af; font-size: 12px;">
+    <div style="text-align: right; margin-top: 30px; color: #9ca3af; font-size: 12px; page-break-inside: avoid;">
         <div style="margin-bottom: 15px;">Dicetak pada: <?= date('d M Y H:i:s') ?></div>
         <img src="Logo%20SI-LIAK.png" alt="Logo SI-LIAK" style="height: 85px;">
     </div>
