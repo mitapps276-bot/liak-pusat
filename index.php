@@ -508,6 +508,7 @@ $leaderboard = mysqli_query($conn, "
             background: rgba(15, 23, 42, 0.85);
             border: 1px solid var(--glass-border);
             border-radius: 15px; padding: 30px;
+            position: relative;
             max-width: 500px; width: 90%;
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
             position: relative;
