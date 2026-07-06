@@ -579,16 +579,17 @@ $leaderboard = mysqli_query($conn, "
             </div>
         </div>
 
-        <div style="display: flex; justify-content: center; margin-bottom: 40px;">
-            <div class="card" style="width: 100%; max-width: 350px; text-align: center;">
-                <div class="card-icon" style="font-size: 48px; color: var(--accent-blue); margin-bottom: 20px;"><i class="fa-solid fa-satellite-dish"></i></div>
-                <h3 style="font-size: 16px;">Total MGMP Terhubung ke Siliak</h3>
-                <div class="value" style="font-size: 64px; color: var(--accent-blue);"><?= number_format($aggr['total_nodes'] ?? 0) ?></div>
-            </div>
-        </div>
-
         <div class="leaderboard-wrapper">
-            <h2 class="section-title">LEADERBOARD KINERJA MGMP</h2>
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 15px;">
+                <h2 class="section-title" style="margin-bottom: 0;">LEADERBOARD KINERJA MGMP</h2>
+                <div class="card" style="padding: 15px 25px; display: flex; align-items: center; gap: 15px; border-radius: 15px; width: max-content;">
+                    <div class="card-icon" style="font-size: 32px; color: var(--accent-blue); margin-bottom: 0;"><i class="fa-solid fa-satellite-dish"></i></div>
+                    <div style="text-align: right;">
+                        <h3 style="font-size: 12px; margin-bottom: 5px;">Total MGMP Terhubung</h3>
+                        <div class="value" style="font-size: 28px; color: var(--accent-blue);"><?= number_format($aggr['total_nodes'] ?? 0) ?></div>
+                    </div>
+                </div>
+            </div>
             <div class="table-container">
                 <table>
                     <thead>
