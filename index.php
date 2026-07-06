@@ -557,13 +557,9 @@ $leaderboard = mysqli_query($conn, "
                 <p>Sistem Informasi Learning Integration & Analitik Kinerja</p>
             </div>
             <div style="display: flex; gap: 10px;">
-                <form method="POST" style="display:inline;" onsubmit="return confirm('YAKIN RESET SEMUA DATA TELEMETRI?\nData akan terhapus dari server pusat dan kembali menjadi nol!')">
-                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
-                    <input type="hidden" name="action" value="reset">
-                    <button type="submit" class="btn-logout" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
-                        <i class="fa-solid fa-trash-can"></i> Reset Data
-                    </button>
-                </form>
+                <button type="button" onclick="openResetModal()" class="btn-logout" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
+                    <i class="fa-solid fa-trash-can"></i> Reset Data
+                </button>
                 <form method="POST" style="display:inline;">
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
                     <input type="hidden" name="action" value="logout">
@@ -788,6 +784,86 @@ $leaderboard = mysqli_query($conn, "
                 noMatchMsg.style.display = hasMatch ? 'none' : 'block';
             }
         }
+
+        // --- Logika 3 Langkah Reset Data ---
+        function openResetModal() {
+            document.getElementById('resetStep1').style.display = 'block';
+            document.getElementById('resetStep2').style.display = 'none';
+            document.getElementById('resetStep3').style.display = 'none';
+            document.getElementById('resetConfirmText').value = '';
+            checkResetConfirm(); // set disabled
+            document.getElementById('resetModal').classList.add('active');
+        }
+
+        function closeResetModal(e) {
+            document.getElementById('resetModal').classList.remove('active');
+        }
+
+        function nextResetStep(step) {
+            if(step === 2) {
+                document.getElementById('resetStep1').style.display = 'none';
+                document.getElementById('resetStep2').style.display = 'block';
+            } else if(step === 3) {
+                document.getElementById('resetStep2').style.display = 'none';
+                document.getElementById('resetStep3').style.display = 'block';
+                document.getElementById('resetConfirmText').focus();
+            }
+        }
+
+        function checkResetConfirm() {
+            const val = document.getElementById('resetConfirmText').value;
+            const btn = document.getElementById('btnExecuteReset');
+            if(val === 'RESET') {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+                btn.style.cursor = 'not-allowed';
+            }
+        }
     </script>
+
+    <!-- Reset 3-Step Modal -->
+    <div class="ai-modal-overlay" id="resetModal" onclick="closeResetModal(event)">
+        <div class="ai-modal" onclick="event.stopPropagation()">
+            <button class="ai-close" type="button" onclick="closeResetModal()"><i class="fa-solid fa-xmark"></i></button>
+            <h3 style="margin-bottom: 20px; color: #ef4444;"><i class="fa-solid fa-triangle-exclamation"></i> Peringatan Kritis</h3>
+            
+            <!-- Step 1 -->
+            <div id="resetStep1">
+                <p style="margin-bottom: 20px; line-height: 1.6; color: var(--text-main); font-size: 15px;">Anda akan menghapus <strong>seluruh data telemetri nasional</strong>. Data yang dihapus tidak dapat dikembalikan lagi.<br><br><small style="color: var(--text-muted);">(Langkah 1 dari 3)</small></p>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button class="btn-print" onclick="closeResetModal()" style="background: #334155; box-shadow: none;">Batal</button>
+                    <button class="btn-logout" onclick="nextResetStep(2)" style="background: #f59e0b;">Lanjutkan</button>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div id="resetStep2" style="display: none;">
+                <p style="margin-bottom: 20px; line-height: 1.6; color: var(--text-main); font-size: 15px;">Semua skor dan capaian MGMP akan kembali menjadi 0 (Nol) untuk seluruh metrik. Apakah Anda benar-benar yakin ingin melakukan ini?<br><br><small style="color: var(--text-muted);">(Langkah 2 dari 3)</small></p>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button class="btn-print" onclick="closeResetModal()" style="background: #334155; box-shadow: none;">Batal</button>
+                    <button class="btn-logout" onclick="nextResetStep(3)" style="background: #f97316;">Ya, Saya Yakin</button>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div id="resetStep3" style="display: none;">
+                <p style="margin-bottom: 15px; line-height: 1.6; color: var(--text-main); font-size: 15px;">Untuk mengeksekusi penghapusan, silakan ketik kata <strong>RESET</strong> di bawah ini:<br><small style="color: var(--text-muted);">(Langkah 3 dari 3)</small></p>
+                <input type="text" id="resetConfirmText" onkeyup="checkResetConfirm()" placeholder="Ketik RESET" style="width: 100%; padding: 12px; margin-bottom: 20px; border-radius: 8px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); color: white; outline: none; font-family: inherit; font-size: 15px;">
+                
+                <form method="POST" id="formResetData">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+                    <input type="hidden" name="action" value="reset">
+                    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                        <button type="button" class="btn-print" onclick="closeResetModal()" style="background: #334155; box-shadow: none;">Batal</button>
+                        <button type="submit" id="btnExecuteReset" class="btn-logout" style="background: #ef4444; opacity: 0.5; cursor: not-allowed;" disabled>Eksekusi Hapus Data</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
