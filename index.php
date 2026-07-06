@@ -1,42 +1,13 @@
 <?php
 session_start();
 require_once 'config/database.php';
+require_once 'helpers.php';
 
-// AI Rule-Based Helper
-function generate_ai_insight($ksi, $ekspor, $impor, $internal) {
-    // 1. Analisis Partisipasi
-    $partisipasi_status = "";
-    if ($ksi >= 10) {
-        $partisipasi_status = "Sangat Sehat";
-        $partisipasi_teks = "Partisipasi guru sangat aktif. Jadikan MGMP percontohan (Role Model).";
-    } elseif ($ksi >= 4) {
-        $partisipasi_status = "Sehat";
-        $partisipasi_teks = "Partisipasi berjalan baik dan stabil. Pertahankan momentum kolaborasi.";
-    } else {
-        $partisipasi_status = "Perlu Perhatian";
-        $partisipasi_teks = "Tingkat partisipasi minim. Perlu pendampingan intensif dari pengawas untuk memotivasi.";
-    }
+set_security_headers();
 
-    // 2. Analisis Kolaborasi
-    $kolaborasi_teks = "";
-    $total_luar = $ekspor + $impor;
-    if ($ekspor == 0 && $impor == 0 && $internal == 0) {
-        $kolaborasi_teks = "Tipe Pasif: Belum ada interaksi berbagi materi yang tercatat.";
-    } elseif ($ekspor > $impor && $ekspor > $internal) {
-        $kolaborasi_teks = "Tipe Produsen: Guru produktif membagikan materi ke sekolah lain. Berdayakan untuk menyusun modul standar kota.";
-    } elseif ($impor > $ekspor && $impor > $internal) {
-        $kolaborasi_teks = "Tipe Konsumen: Minat belajar tinggi (mengambil referensi luar), namun perlu distimulasi untuk produksi materi sendiri.";
-    } elseif ($internal > $total_luar) {
-        $kolaborasi_teks = "Tipe Terisolasi: Kolaborasi kuat, tapi hanya berputar di 1 sekolah. Gelar forum diskusi lintas sekolah.";
-    } else {
-        $kolaborasi_teks = "Tipe Seimbang: Pertukaran materi internal dan lintas sekolah berjalan seimbang.";
-    }
-    
-    return [
-        'status' => $partisipasi_status,
-        'insight' => $partisipasi_teks . " " . $kolaborasi_teks
-    ];
-}
+// Secure cookie jika HTTPS
+$is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+if ($is_https) ini_set('session.cookie_secure', 1);
 
 // Cek Keamanan Akses Dasbor
 if (!isset($_SESSION['mothership_logged_in']) || $_SESSION['mothership_logged_in'] !== true) {
@@ -44,18 +15,27 @@ if (!isset($_SESSION['mothership_logged_in']) || $_SESSION['mothership_logged_in
     exit;
 }
 
-// Proses Logout
-if (isset($_GET['action']) && $_GET['action'] === 'logout') {
-    session_destroy();
-    header("Location: login.php");
-    exit;
+// CSRF Token
+$csrf_token = csrf_token();
+
+// Proses Logout — hanya via POST + CSRF (mencegah CSRF logout attack)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'logout') {
+    if (csrf_verify()) {
+        session_unset();
+        session_destroy();
+        setcookie(session_name(), '', time() - 3600, '/');
+        header("Location: login.php");
+        exit;
+    }
 }
 
-// Proses Reset Data Telemetri
-if (isset($_GET['action']) && $_GET['action'] === 'reset') {
-    mysqli_query($conn, "TRUNCATE TABLE national_telemetry");
-    header("Location: index.php");
-    exit;
+// Proses Reset Data Telemetri — hanya via POST + CSRF (mencegah aksi destruktif via link)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'reset') {
+    if (csrf_verify()) {
+        mysqli_query($conn, "TRUNCATE TABLE national_telemetry");
+        header("Location: index.php");
+        exit;
+    }
 }
 
 // Agregasi Nasional
@@ -573,12 +553,20 @@ $leaderboard = mysqli_query($conn, "
                 <p>Sistem Informasi Learning Integration & Analitik Kinerja</p>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button onclick="if(confirm('YAKIN RESET SEMUA DATA TELEMETRI? Data akan terhapus dari server pusat dan kembali menjadi nol!')) window.location.href='?action=reset'" class="btn-logout" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
-                    <i class="fa-solid fa-trash-can"></i> Reset Data
-                </button>
-                <a href="?action=logout" class="btn-logout">
-                    <i class="fa-solid fa-power-off"></i> Logout
-                </a>
+                <form method="POST" style="display:inline;" onsubmit="return confirm('YAKIN RESET SEMUA DATA TELEMETRI?\nData akan terhapus dari server pusat dan kembali menjadi nol!')">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+                    <input type="hidden" name="action" value="reset">
+                    <button type="submit" class="btn-logout" style="background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);">
+                        <i class="fa-solid fa-trash-can"></i> Reset Data
+                    </button>
+                </form>
+                <form method="POST" style="display:inline;">
+                    <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($csrf_token) ?>">
+                    <input type="hidden" name="action" value="logout">
+                    <button type="submit" class="btn-logout">
+                        <i class="fa-solid fa-power-off"></i> Logout
+                    </button>
+                </form>
             </div>
         </div>
 

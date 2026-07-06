@@ -1,6 +1,13 @@
 <?php
 session_start();
 require_once 'config/database.php';
+require_once 'helpers.php';
+
+set_security_headers();
+
+// Secure cookie jika HTTPS
+$is_https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+if ($is_https) ini_set('session.cookie_secure', 1);
 
 if (!isset($_SESSION['mothership_logged_in']) || $_SESSION['mothership_logged_in'] !== true) {
     echo "Unauthorized";
@@ -22,38 +29,7 @@ if (mysqli_num_rows($query) == 0) {
 
 $row = mysqli_fetch_assoc($query);
 
-function generate_ai_insight($ksi, $ekspor, $impor, $internal) {
-    $partisipasi_status = "";
-    if ($ksi >= 10) {
-        $partisipasi_status = "Sangat Sehat";
-        $partisipasi_teks = "Partisipasi guru sangat aktif. Jadikan MGMP percontohan (Role Model).";
-    } elseif ($ksi >= 4) {
-        $partisipasi_status = "Sehat";
-        $partisipasi_teks = "Partisipasi berjalan baik dan stabil. Pertahankan momentum kolaborasi.";
-    } else {
-        $partisipasi_status = "Perlu Perhatian";
-        $partisipasi_teks = "Tingkat partisipasi minim. Perlu pendampingan intensif dari pengawas untuk memotivasi.";
-    }
-
-    $kolaborasi_teks = "";
-    $total_luar = $ekspor + $impor;
-    if ($ekspor == 0 && $impor == 0 && $internal == 0) {
-        $kolaborasi_teks = "Tipe Pasif: Belum ada interaksi berbagi materi yang tercatat.";
-    } elseif ($ekspor > $impor && $ekspor > $internal) {
-        $kolaborasi_teks = "Tipe Produsen: Guru produktif membagikan materi ke sekolah lain. Berdayakan untuk menyusun modul standar kota.";
-    } elseif ($impor > $ekspor && $impor > $internal) {
-        $kolaborasi_teks = "Tipe Konsumen: Minat belajar tinggi (mengambil referensi luar), namun perlu distimulasi untuk produksi materi sendiri.";
-    } elseif ($internal > $total_luar) {
-        $kolaborasi_teks = "Tipe Terisolasi: Kolaborasi kuat, tapi hanya berputar di 1 sekolah. Gelar forum diskusi lintas sekolah.";
-    } else {
-        $kolaborasi_teks = "Tipe Seimbang: Pertukaran materi internal dan lintas sekolah berjalan seimbang.";
-    }
-    
-    return [
-        'status' => $partisipasi_status,
-        'insight' => $partisipasi_teks . " " . $kolaborasi_teks
-    ];
-}
+// generate_ai_insight() tersedia dari helpers.php
 
 $ai_data = generate_ai_insight($row['ksi_score'], $row['cs_ekspor'], $row['cs_impor'], $row['cs_internal']);
 ?>

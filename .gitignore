@@ -1,0 +1,25 @@
+# =====================================
+# SI-LIAK PUSAT — .gitignore
+# =====================================
+
+# Kredensial & Secrets — JANGAN COMMIT!
+config/secrets.php
+config/admin_hash.txt
+
+# Brute-force tracking files
+config/attempts/
+
+# Telemetry sync state
+config/telemetry_last_sync.txt
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+
+# Log files
+*.log
+ngrok_log.txt

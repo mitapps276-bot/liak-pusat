@@ -1,0 +1,5 @@
+# =====================================
+# KEAMANAN: Blokir akses browser langsung ke direktori config/
+# =====================================
+Order deny,allow
+Deny from all
