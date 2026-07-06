@@ -629,7 +629,7 @@ $leaderboard = mysqli_query($conn, "
                             <td><small style="color:var(--text-muted);"><i class="fa-regular fa-clock"></i> <?= htmlspecialchars(date('d M Y, H:i', strtotime($row['last_sync']))) ?></small></td>
                             <td>
                                 <button class="btn-ai" onclick="showAiModal('<?= htmlspecialchars($row['mgmp_name'], ENT_QUOTES) ?>', '<?= htmlspecialchars($ai_data['status'], ENT_QUOTES) ?>', '<?= htmlspecialchars($ai_data['insight'], ENT_QUOTES) ?>', '<?= $status_class ?>')">
-                                    <i class="fa-solid fa-wand-magic-sparkles"></i> AI Insight
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> SI-LIAK Insight
                                 </button>
                             </td>
                         </tr>
@@ -675,7 +675,7 @@ $leaderboard = mysqli_query($conn, "
     <div class="ai-modal-overlay" id="aiModal" onclick="closeAiModal(event)">
         <div class="ai-modal" onclick="event.stopPropagation()">
             <button class="ai-close" onclick="closeAiModal()"><i class="fa-solid fa-xmark"></i></button>
-            <h3><i class="fa-solid fa-robot"></i> Analisis AI - <span id="aiMgmpName"></span></h3>
+            <h3><i class="fa-solid fa-robot"></i> SI-LIAK Insight - <span id="aiMgmpName"></span></h3>
             <div id="aiStatus" class="ai-status-badge"></div>
             <p id="aiInsightText" style="line-height: 1.6; color: var(--text-main); font-size: 15px;"></p>
         </div>
